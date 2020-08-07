@@ -92,6 +92,12 @@ int main(int argc, char** argv) {
                 it->at("depthToRupt"), it->at("ruptureDist"), it->at("vs30"),
                 it->at("sOrD"), it->at("thetaOrPhi"), it->at("truncate"),
                 inputs.get_seed());
+          } else if (model_name == "LiningDiaozemin") {
+            eq_generator = std::make_shared<EQGenerator>(
+                inputs.get_model_name(), it->at("faultType"),
+                it->at("simulationType"), it->at("momentMagnitude"),
+                it->at("depthToRupt"), it->at("ruptureDist"), it->at("vs30"),
+                it->at("sOrD"), it->at("truncate"), inputs.get_seed()); 
           } else {
             throw std::runtime_error(
                 "ERROR: In main() of StochasticGroundMotion: Earthquake model "
@@ -115,6 +121,12 @@ int main(int argc, char** argv) {
                 it->at("depthToRupt"), it->at("ruptureDist"), it->at("vs30"),
                 it->at("sOrD"), it->at("thetaOrPhi"), it->at("truncate"),
                 time_diff.count());
+          } else if (model_name == "LiningDiaozemin") {
+            eq_generator = std::make_shared<EQGenerator>(
+                inputs.get_model_name(), it->at("faultType"),
+                it->at("simulationType"), it->at("momentMagnitude"),
+                it->at("depthToRupt"), it->at("ruptureDist"), it->at("vs30"),
+                it->at("sOrD"), it->at("truncate"), time_diff.count());
           } else {
             throw std::runtime_error(
                 "ERROR: In main() of StochasticGroundMotion: Earthquake model "
@@ -141,8 +153,8 @@ int main(int argc, char** argv) {
              {"Data", "Time history generated using " +
                           inputs.get_model_name() + " model"},
              {"numSteps", event_data.at("numSteps")},
-             {"timeSeries", json::array({event_data.at("timeSeries")[0]})},
-             {"pattern", json::array({event_data.at("pattern")[0]})}});
+             {"timeSeries", json::array({event_data.at("timeSeries")})},
+             {"pattern", json::array({event_data.at("pattern")})}});
 
         auto event_array = json::array();
         event_array.push_back(array_entry);
