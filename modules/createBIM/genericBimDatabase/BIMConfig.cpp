@@ -1,5 +1,5 @@
 #include "BIMConfig.h"
-
+#include <stdexcept>
 using namespace BIM;
 
 BIMConfig::BIMConfig()

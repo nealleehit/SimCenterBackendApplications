@@ -38,11 +38,11 @@ int main(int argc, char** argv) {
     event.emplace("randomVariables", json::array());
     json event_description;
     event_description.emplace("type", "Seismic");
-    event_description.emplace("subtype", "StochasticGroundMotion");
+    event_description.emplace("subtype", "StochasticGroundMotion"); // need revise
 
     auto pattern = json::object({{"dof", 1},
                                  {"timeSeries", "accel_x"},
-                                 {"type", "UniformAcceleration"}});
+                                 {"type", "UniformAcceleration"}}); // need revise
 
     event_description.emplace("pattern", json::array({pattern}));
     event.emplace("Events", json::array({event_description}));
@@ -81,23 +81,30 @@ int main(int argc, char** argv) {
         // Check seed provided
         if (inputs.seed_provided()) {
           // Vlachos et al (2018) model
-          if (model_name == "VlachosSiteSpecificEQ") {
+          if (model_name == "VlachosSiteSpecificEQ") {  // 5 parameter
             eq_generator = std::make_shared<EQGenerator>(
                 inputs.get_model_name(), it->at("momentMagnitude"),
                 it->at("ruptureDist"), it->at("vs30"), inputs.get_seed());
-          } else if (model_name == "DabaghiDerKiureghianNFGM") {
+          } else if (model_name == "DabaghiDerKiureghianNFGM") { // 11 par
             eq_generator = std::make_shared<EQGenerator>(
                 inputs.get_model_name(), it->at("faultType"),
                 it->at("simulationType"), it->at("momentMagnitude"),
                 it->at("depthToRupt"), it->at("ruptureDist"), it->at("vs30"),
                 it->at("sOrD"), it->at("thetaOrPhi"), it->at("truncate"),
                 inputs.get_seed());
-          } else if (model_name == "LiningDiaozemin") {
+          } else if (model_name == "LiningDiaozemin_VH") { // 10 par
             eq_generator = std::make_shared<EQGenerator>(
                 inputs.get_model_name(), it->at("faultType"),
                 it->at("simulationType"), it->at("momentMagnitude"),
                 it->at("depthToRupt"), it->at("ruptureDist"), it->at("vs30"),
                 it->at("sOrD"), it->at("truncate"), inputs.get_seed()); 
+          } else if (model_name == "LiningDiaozemin_MP") { // 11 par
+            eq_generator = std::make_shared<EQGenerator>(
+                inputs.get_model_name(), it->at("faultType"),
+                it->at("simulationType"), it->at("momentMagnitude"),
+                it->at("depthToRupt"), it->at("ruptureDist"), it->at("vs30"),
+                it->at("sOrD"), it->at("truncate"), inputs.get_seed(), 
+                it->at("pos"), it->at("CohType")); 
           } else {
             throw std::runtime_error(
                 "ERROR: In main() of StochasticGroundMotion: Earthquake model "
@@ -105,28 +112,35 @@ int main(int argc, char** argv) {
                 "inputs\n");	    
           }
         } else {
-	  const auto clock_time = std::chrono::time_point<std::chrono::system_clock>{};
-	  const auto current_time = std::chrono::system_clock::now();
+          const auto clock_time = std::chrono::time_point<std::chrono::system_clock>{};
+          const auto current_time = std::chrono::system_clock::now();
 
-	  const auto time_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - clock_time);
+          const auto time_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - clock_time);
 
-          if (model_name == "VlachosSiteSpecificEQ") {
+          if (model_name == "VlachosSiteSpecificEQ") { //5 parameters
             eq_generator = std::make_shared<EQGenerator>(
                 inputs.get_model_name(), it->at("momentMagnitude"),
                 it->at("ruptureDist"), it->at("vs30"), time_diff.count());
-          } else if (model_name == "DabaghiDerKiureghianNFGM") {
+          } else if (model_name == "DabaghiDerKiureghianNFGM") { // 11par
             eq_generator = std::make_shared<EQGenerator>(
                 inputs.get_model_name(), it->at("faultType"),
                 it->at("simulationType"), it->at("momentMagnitude"),
                 it->at("depthToRupt"), it->at("ruptureDist"), it->at("vs30"),
                 it->at("sOrD"), it->at("thetaOrPhi"), it->at("truncate"),
                 time_diff.count());
-          } else if (model_name == "LiningDiaozemin") {
+          } else if (model_name == "LiningDiaozemin_VH") { // 10 par
             eq_generator = std::make_shared<EQGenerator>(
                 inputs.get_model_name(), it->at("faultType"),
                 it->at("simulationType"), it->at("momentMagnitude"),
                 it->at("depthToRupt"), it->at("ruptureDist"), it->at("vs30"),
                 it->at("sOrD"), it->at("truncate"), time_diff.count());
+          } else if (model_name == "LiningDiaozemin_MP") { // 12 par
+            eq_generator = std::make_shared<EQGenerator>(
+                inputs.get_model_name(), it->at("faultType"),
+                it->at("simulationType"), it->at("momentMagnitude"),
+                it->at("depthToRupt"), it->at("ruptureDist"), it->at("vs30"),
+                it->at("sOrD"), it->at("truncate"), time_diff.count(), 
+                it->at("pos"), it->at("CohType"));
           } else {
             throw std::runtime_error(
                 "ERROR: In main() of StochasticGroundMotion: Earthquake model "
@@ -147,14 +161,15 @@ int main(int argc, char** argv) {
         auto event_data = time_history.at("Events")[0];
 
         auto array_entry = json::object(
-            {{"name", event_data.at("name")},
+            { {"name", event_data.at("name")},
              {"type", event_data.at("type")},
              {"dT", event_data.at("dT")},
              {"Data", "Time history generated using " +
                           inputs.get_model_name() + " model"},
              {"numSteps", event_data.at("numSteps")},
-             {"timeSeries", json::array({event_data.at("timeSeries")})},
-             {"pattern", json::array({event_data.at("pattern")})}});
+             {"timeSeries", json::array({event_data.at("timeSeries")[0]})},
+             {"pattern", json::array({event_data.at("pattern")[0]})},
+             {"CohType", event_data.at("CohType")} });
 
         auto event_array = json::array();
         event_array.push_back(array_entry);

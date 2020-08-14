@@ -110,6 +110,28 @@ class EQGenerator {
               double s_or_d, bool truncate, int seed);
 
   /**
+  * @constructor Construct earthquake generator for earthquake with input characteristics
+  * and provided seed
+  * @param[in] model_name Name of stochastic model
+  * @param[in] faulting Type of faulting
+  * @param[in] simulation_type Pulse-type of simulation
+  * @param[in] moment_magnitude Moment magnitude for earthquake event
+  * @param[in] depth_to_rupt Depth to the top of the rupture plane in kilometers
+  * @param[in] rupture_dist Closest-to-site rupture distance in kilometers
+  * @param[in] vs30 Soil shear wave velocity averaged over top 30 meters in
+  *                 meters per second
+  * @param[in] s_or_d Directivity parameter s or d (km)--input the larger of
+  *                   the two
+  * @param[in] truncate Boolean indicating whether to truncate and baseline correct
+  *                     synthetic motion.
+  * @param[in] seed Value to seed random generator with
+  * @param[in] pos Position numbers for Multi-point inputs 
+  */
+  EQGenerator(std::string model_name, std::string faulting,
+              std::string simulation_type, double moment_magnitude,
+              double depth_to_rupt, double rupture_dist, double vs30,
+              double s_or_d, bool truncate, int seed, int pos, std::string cohtype);
+  /**
    * Generate time history based on model parameters
    * @param[in] event_name Name to use for event
    * @return JsonObject containing loading time histories

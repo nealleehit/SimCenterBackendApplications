@@ -1,7 +1,8 @@
 #include <memory>
 #include <string>
 #include <dabaghi_der_kiureghian.h>
-#include <li_diao.h>
+#include <li_diao_v_h.h>
+#include <li_diao_mp.h>
 #include <json_object.h>
 #include <factory.h>
 #include <stochastic_model.h>
@@ -110,24 +111,24 @@ EQGenerator::EQGenerator(std::string model_name, std::string faulting,
                          std::string simulation_type, double moment_magnitude,
                          double depth_to_rupt, double rupture_dist, double vs30,
                          double s_or_d, bool truncate, int seed) {
-  stochastic::FaultType2 fault_type;
+  stochastic::FaultType fault_type;
   if (faulting == "StrikeSlip") {
-    fault_type = stochastic::FaultType2::StrikeSlip;
+    fault_type = stochastic::FaultType::StrikeSlip;
   } else if (faulting == "ReverseAndRevObliq") {
-    fault_type = stochastic::FaultType2::ReverseAndRevObliq;
+    fault_type = stochastic::FaultType::ReverseAndRevObliq;
   } else {
     throw std::invalid_argument(
         "ERROR: In EQGenerator::EQGenerator: Input fault type is not correct "
         "or not supported, please check inputs\n");
   }
 
-  stochastic::SimulationType2 sim_type;
+  stochastic::SimulationType sim_type;
   if (simulation_type == "PulseAndNoPulse") {
-    sim_type = stochastic::SimulationType2::PulseAndNoPulse;
+    sim_type = stochastic::SimulationType::PulseAndNoPulse;
   } else if (simulation_type == "Pulse") {
-    sim_type = stochastic::SimulationType2::Pulse;
+    sim_type = stochastic::SimulationType::Pulse;
   } else if (simulation_type == "NoPulse") {
-    sim_type = stochastic::SimulationType2::NoPulse;
+    sim_type = stochastic::SimulationType::NoPulse;
   } else {
     throw std::invalid_argument("ERROR: In EQGenerator::EQGenerator: Input "
                                 "simulation type is not correct "
@@ -135,14 +136,72 @@ EQGenerator::EQGenerator(std::string model_name, std::string faulting,
   }
 
   eq_model_ =
-      Factory<stochastic::StochasticModel, stochastic::FaultType2,
-              stochastic::SimulationType2, double, double, double, double,
+      Factory<stochastic::StochasticModel, stochastic::FaultType,
+              stochastic::SimulationType, double, double, double, double,
               double, unsigned int, unsigned int, bool, int>::instance()
           ->create(model_name, std::move(fault_type), std::move(sim_type),
                    std::move(moment_magnitude), std::move(depth_to_rupt),
                    std::move(rupture_dist), std::move(vs30), std::move(s_or_d),
                    std::move(1), std::move(1),
                    std::move(truncate), std::move(seed));
+}
+
+EQGenerator::EQGenerator(std::string model_name, std::string faulting,
+                         std::string simulation_type, double moment_magnitude,
+                         double depth_to_rupt, double rupture_dist, double vs30,
+                         double s_or_d, bool truncate, int seed, 
+                         int pos, std::string cohtype) {
+  stochastic::FaultType fault_type;
+  if (faulting == "StrikeSlip") {
+    fault_type = stochastic::FaultType::StrikeSlip;
+  } else if (faulting == "ReverseAndRevObliq") {
+    fault_type = stochastic::FaultType::ReverseAndRevObliq;
+  } else {
+    throw std::invalid_argument(
+        "ERROR: In EQGenerator::EQGenerator: Input fault type is not correct "
+        "or not supported, please check inputs\n");
+  }
+
+  stochastic::SimulationType sim_type;
+  if (simulation_type == "PulseAndNoPulse") {
+    sim_type = stochastic::SimulationType::PulseAndNoPulse;
+  } else if (simulation_type == "Pulse") {
+    sim_type = stochastic::SimulationType::Pulse;
+  } else if (simulation_type == "NoPulse") {
+    sim_type = stochastic::SimulationType::NoPulse;
+  } else {
+    throw std::invalid_argument("ERROR: In EQGenerator::EQGenerator: Input "
+                                "simulation type is not correct "
+                                "or not supported, please check inputs\n");
+  }
+  stochastic::CohType coh_type;
+  if (cohtype == "FengHu") {
+      coh_type = stochastic::CohType::FengHu;
+  } else if (cohtype == "HarichandranVanmarcke") {
+      coh_type = stochastic::CohType::HarichandranVanmarcke;
+  } else if (cohtype == "LohYeh") {
+      coh_type = stochastic::CohType::LohYeh;
+  } else if (cohtype == "QuTJ") {
+      coh_type = stochastic::CohType::QuTJ;
+  } else if (cohtype == "HaoH") {
+      coh_type = stochastic::CohType::HaoH;
+  } else if (cohtype == "Nakamura") {
+      coh_type = stochastic::CohType::Nakamura;
+  } else {
+    throw std::invalid_argument("ERROR: In EQGenerator::EQGenerator: Input "
+                                "simulation type is not correct "
+                                "or not supported, please check inputs\n");
+  }
+  eq_model_ =
+      Factory<stochastic::StochasticModel, stochastic::FaultType,
+              stochastic::SimulationType, double, double, double, double,
+              double, unsigned int, unsigned int, bool, int,
+              int, stochastic::CohType>::instance()
+          ->create(model_name, std::move(fault_type), std::move(sim_type),
+                   std::move(moment_magnitude), std::move(depth_to_rupt),
+                   std::move(rupture_dist), std::move(vs30), std::move(s_or_d),
+                   std::move(1), std::move(1), std::move(truncate), 
+                   std::move(seed), std::move(pos), std::move(coh_type));
 }
 
 
